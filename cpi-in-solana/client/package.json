@@ -1,0 +1,17 @@
+{
+  "name": "client",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "litesvm": "^0.2.0",
+    "@solana/web3.js": "^1.87.6"
+  }
+}
