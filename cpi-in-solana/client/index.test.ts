@@ -1,5 +1,4 @@
-
-import {test,expect} from "bun:test"
+import { test, expect } from "bun:test";
 import { LiteSVM } from "litesvm";
 import {
   PublicKey,
@@ -8,21 +7,23 @@ import {
   Keypair,
   LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
- 
+
 test("one transfer", () => {
   const svm = new LiteSVM();
-//   const contractPubkey = Keypair.generate()
-  svm.addProgramFromFile(contractPubkey.publicKey, "./test.so")
+  const contractPubkey = Keypair.generate();
+  svm.addProgramFromFile(contractPubkey.publicKey, "./double.so");
   const payer = new Keypair();
   svm.airdrop(payer.publicKey, BigInt(LAMPORTS_PER_SOL));
-  const receiver = PublicKey.unique();
+  const dataAccount = new Keypair();
   const blockhash = svm.latestBlockhash();
   const transferLamports = 1_000_000n;
   const ixs = [
-    SystemProgram.transfer({
+    SystemProgram.createAccount({
       fromPubkey: payer.publicKey,
-      toPubkey: receiver,
-      lamports: transferLamports,
+      newAccountPubkey: dataAccount.publicKey,
+      lamports: Number(svm.minimumBalanceForRentExemption(BigInt(4))),
+      space: 4,
+      programId: contractPubkey.publicKey,
     }),
   ];
   const tx = new Transaction();
@@ -30,6 +31,6 @@ test("one transfer", () => {
   tx.add(...ixs);
   tx.sign(payer);
   svm.sendTransaction(tx);
-  const balanceAfter = svm.getBalance(receiver);
-  expect(balanceAfter).toBe(transferLamports);
+  const balanceAfter = svm.getBalance(dataAccount.publicKey);
+  expect(balanceAfter).toBe(svm.minimumBalanceForRentExemption(BigInt(4)));
 });
